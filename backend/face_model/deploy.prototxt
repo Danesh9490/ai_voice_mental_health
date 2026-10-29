@@ -1,0 +1,12 @@
+input: "data"
+input_dim: 1
+input_dim: 3
+input_dim: 300
+input_dim: 300
+
+layer {
+  name: "data_bn"
+  type: "BatchNorm"
+  bottom: "data"
+  top: "data_bn"
+}

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Mental Health – Live Mic</title>
+</head>
+<body style="text-align:center;font-family:Arial;margin-top:50px;">
+
+<h2>Live Voice Mental Health Test</h2>
+
+<button id="record">Start Recording</button>
+<button id="stop" disabled>Stop</button>
+
+<p id="status"></p>
+<p id="result"></p>
+
+<script>
+let recorder, chunks = [];
+
+document.getElementById("record").onclick = async () => {
+  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+  recorder = new MediaRecorder(stream);
+  chunks = [];
+
+  recorder.ondataavailable = e => chunks.push(e.data);
+  recorder.start();
+
+  status.innerText = "Recording...";
+  record.disabled = true;
+  stop.disabled = false;
+};
+
+document.getElementById("stop").onclick = () => {
+  recorder.stop();
+
+  recorder.onstop = async () => {
+    const blob = new Blob(chunks, { type: "audio/wav" });
+
+    const formData = new FormData();
+    formData.append("file", blob, "voice.wav");
+
+    status.innerText = "Analyzing...";
+
+    const res = await fetch("http://127.0.0.1:8000/predict", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+
+    result.innerText =
+      "Stress Level: " + data.stress_level +
+      " | Confidence: " + data.confidence;
+
+    status.innerText = "Done";
+    record.disabled = false;
+    stop.disabled = true;
+  };
+};
+</script>
+
+</body>
+</html>
